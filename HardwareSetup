@@ -1,0 +1,5 @@
+#-----Hardware-----
+button = machine.Pin(22, machine.Pin.IN)
+buzzer = machine.Pin(21, machine.Pin.OUT)
+green_led = machine.Pin(4, machine.Pin.OUT)
+red_led = machine.Pin(12, machine.Pin.OUT)
