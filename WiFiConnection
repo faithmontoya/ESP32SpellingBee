@@ -1,0 +1,15 @@
+#-----Connect to Wifi-----
+
+SSID = "DecoDeco"
+Password = "@liensRr3al?"
+
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+if not wlan.isconnected():
+    print(f"Connecting to WiFi '{SSID}'...")
+    wlan.connect(SSID, Password)
+    while not wlan.isconnected():
+        time.sleep(1)
+print('Connected to Network: DecoDeco')
+print(f'Device IP Address: {wlan.ifconfig()[0]}')
+print("-" * 20)
