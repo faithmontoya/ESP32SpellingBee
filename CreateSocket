@@ -4,3 +4,4 @@ addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
 s = socket.socket()
 s.bind(addr)
 s.listen(1)
+print("Click HERE to open the game! --> http://%s/" % ip)
