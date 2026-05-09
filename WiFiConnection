@@ -3,13 +3,16 @@
 SSID = "DecoDeco"
 Password = "@liensRr3al?"
 
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-if not wlan.isconnected():
-    print(f"Connecting to WiFi '{SSID}'...")
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
     wlan.connect(SSID, Password)
+
+    print("Connecting to Wi-Fi...")
     while not wlan.isconnected():
-        time.sleep(1)
-print('Connected to Network: DecoDeco')
-print(f'Device IP Address: {wlan.ifconfig()[0]}')
-print("-" * 20)
+        time.sleep(0.2)
+
+    print("Connected to DecoDeco")
+    return wlan.ifconfig()[0]
+
+ip = connect_wifi()
