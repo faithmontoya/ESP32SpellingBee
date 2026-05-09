@@ -15,7 +15,7 @@ button {{ font-size: 20px; padding: 8px; }}
 <body>
 <h1>Welcome to the ESP32 Spelling Bee!</h1>
 
-<p><b>Press the button</b> to hear your new word!
+<p>Press the button to hear your new word!</p>
 <p>Good luck!</p>
 
 <form action="/" method="get">
