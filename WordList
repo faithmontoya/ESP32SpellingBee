@@ -19,3 +19,8 @@ WORDS = [
   "Pneumonia",
   "Croissant",
 ]
+
+current_word = None
+last_result = ""
+last_correct_spelling = ""
+last_message = ""
