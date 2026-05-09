@@ -1,5 +1,5 @@
-# HTML Page
-# -----------------------------
+#-----HTML Page-----
+
 def webpage():
     return f"""
 <!DOCTYPE html>
