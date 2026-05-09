@@ -1,0 +1,31 @@
+# HTML Page
+# -----------------------------
+def webpage():
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>ESP32 Spelling Bee</title>
+<style>
+body {{ font-family: Arial; margin: 40px; }}
+input {{ font-size: 20px; padding: 8px; }}
+button {{ font-size: 20px; padding: 8px; }}
+</style>
+</head>
+<body>
+<h1>Welcome to the ESP32 Spelling Bee!</h1>
+
+<p><b>Press the button</b> to hear your new word!
+<p>Good luck!</p>
+
+<form action="/" method="get">
+    <input type="text" name="answer" placeholder="Type your spelling" autofocus>
+</form>
+
+<h2>{last_result}</h2>
+<p>{last_correct_spelling}</p>
+<p>{last_message}</p>
+
+</body>
+</html>
+"""
