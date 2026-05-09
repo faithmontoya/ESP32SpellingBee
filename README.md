@@ -51,7 +51,6 @@ The ESP32 joins the home network and serves a single-page HTML form where the pl
 -	Green LED 
 -	Red LED 
 -	2x 330 Ω Resistors - one per LED
--	1x 10 kΩ pull-down Resistor (for button)
 
 ---
 
