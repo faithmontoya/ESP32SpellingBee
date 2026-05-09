@@ -1,0 +1,16 @@
+#-----Button Control-----
+
+def wait_for_button():
+    global current_word, last_result, last_correct_spelling, last_message
+    if button.value() == 0:  # pressed
+        time.sleep_ms(20)
+        if button.value() == 0: #nothing lights up if nothing is pressed
+            green_led.value(0)
+            red_led.value(0)
+
+            # Pick a new word
+            import urandom #for random selection 
+            current_word = WORDS[urandom.getrandbits(8) % len(WORDS)] #recieve a random word
+            last_result = ""
+            last_correct_spelling = ""
+            last_message = ""
