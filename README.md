@@ -96,3 +96,160 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
 
 
 THIS CODE IS FREE TO MODIFY AND SHARE!!!
+
+
+------------------------------------------------FULL ESP32 SPELLING BEE SCRIPT: ---------------------------------------------------
+
+
+import network
+import socket
+import machine
+import time
+import ure
+import urequests
+
+#-----Hardware-----
+
+button = machine.Pin(22, machine.Pin.IN)
+buzzer = machine.Pin(21, machine.Pin.OUT)
+green_led = machine.Pin(4, machine.Pin.OUT)
+red_led = machine.Pin(12, machine.Pin.OUT)
+
+#-----Word List-----
+
+WORDS = [
+  "Fahrenheit",
+  "Definitely",
+  "Restaurant",
+  "Vacuum",
+  "Separate",
+  "Maintenance",
+  "Yacht",
+  "Necessary", 
+  "Bureaucracy",
+  "Onomatopoeia",
+  "Mischievous",
+  "Psychology",
+  "Receipt",
+  "License",
+  "Separators",
+  "Pneumonia",
+  "Croissant",
+]
+
+current_word = None
+last_result = ""
+last_correct_spelling = ""
+last_message = ""
+
+#-----Connect to Wifi-----
+
+SSID = "DecoDeco"
+Password = "@liensRr3al?"
+
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(SSID, Password)
+
+    print("Connecting to Wi-Fi...")
+    while not wlan.isconnected():
+        time.sleep(0.2)
+
+    print("Connected to DecoDeco")
+    return wlan.ifconfig()[0]
+
+ip = connect_wifi()
+
+#-----Button Control-----
+
+def wait_for_button():
+    global current_word, last_result, last_correct_spelling, last_message
+    if button.value() == 0:  # pressed
+        time.sleep_ms(20)
+        if button.value() == 0: #nothing lights up if nothing is pressed
+            green_led.value(0)
+            red_led.value(0)
+
+            # Pick a new word
+            import urandom #for random selection 
+            current_word = WORDS[urandom.getrandbits(8) % len(WORDS)] #recieve a random word
+            last_result = ""
+            last_correct_spelling = ""
+            last_message = ""
+            
+#-----HTML Page-----
+
+def webpage():
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>ESP32 Spelling Bee</title>
+<style>
+body {{ font-family: Arial; margin: 40px; }}
+input {{ font-size: 20px; padding: 8px; }}
+button {{ font-size: 20px; padding: 8px; }}
+</style>
+</head>
+<body>
+<h1>Welcome to the ESP32 Spelling Bee!</h1>
+
+<p>Press the button on the ESP32 to hear your word!</p>
+<p>Good luck!</p>
+
+<form action="/" method="get">
+    <input type="text" name="answer" placeholder="Type your answer" autofocus>
+    <button type="submit">Submit</button>
+</form>
+
+<h2>{last_result}</h2>
+<p>{last_correct_spelling}</p>
+<p>{last_message}</p>
+
+</body>
+</html>
+"""
+
+# -----------------------------
+# Web Server
+# -----------------------------
+addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
+s = socket.socket()
+s.bind(addr)
+s.listen(1)
+print("Click HERE to open the game! --> http://%s/" % ip)
+
+#-----Main Loop-----
+
+while True:
+    wait_for_button()
+
+    try:
+        conn, addr = s.accept()
+        request = conn.recv(1024).decode() #read the data and convert into string response
+
+        # Extract answer from URL
+        match = ure.search("answer=([^& ]+)", request)
+        if match and current_word:
+            user_answer = match.group(1).replace("%20", " ").lower() #return answer, add a space for URL, allow case-insenitivity
+            correct = (user_answer == current_word.lower()) #results in True or False
+
+            if correct:
+                green_led.value(1)
+                red_led.value(0)
+                
+            else:
+                green_led.value(0)
+                red_led.value(1)
+               
+
+            last_correct_spelling = print(f"Correct spelling: {current_word}")
+
+        response = webpage()
+        conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #add 200 OK to verify successful connection
+        conn.sendall(response) #send the response from the webpage
+        conn.close() #close the connection
+
+    except Exception as e:
+        print("Error:", e)
