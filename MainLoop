@@ -1,0 +1,30 @@
+#-----Main Loop-----
+
+while True:
+  wait_for_button()
+
+  try:
+    conn, addr = s.accept() #accept the connection
+    request = conn.recv(1024).decode() #read the data and convert into a string response
+
+    #-----Recieve the answer from webpage URL-----
+    match = ure.search("answer=([^& ]", resquest)
+    if match and current_word:
+      user_answer = match.group(1).replace("%20", " ").lower() #return answer, add a space for URL, allow case-insenitivity
+      correct = (user_answer == current_word.lower()) #results in True or False
+
+      #-----Responses for the User answers-----
+      if correct:
+        green_led.value(1)
+        red_led.value(0)
+
+      else:
+        green_led.value(0)
+        red_led.value(1)
+      
+      last_correct_spelling = print(f"Correct spelling: {current_word}") #print the correct spelling compared to user's answer
+      
+    response = webpage() 
+    conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #add 200 OK to verify successful connection
+    conn.sendall(response) #send the response from the webpage
+    conn.close() #close the connection
