@@ -10,6 +10,7 @@ Challenge your spelling skills with common words that are surprisingly tricky to
 1. Overview
 2. Features
 3. Hardware Requirements
+4. Wiring
 5. Wi-Fi Configuration
 6. Webpage
 7. Button — Triggering New Words
@@ -45,13 +46,39 @@ The ESP32 joins the home network and serves a single-page HTML form where the pl
 -	Microcontroller – ESP32
 -	Breadboard 
 -	USB cable (Micro-USB)
--	11x Jumper wires 
+-	Jumper wires 
 -	Tactile push-button 
 -	Passive buzzer 
 -	Green LED 
 -	Red LED 
 -	2x 330 Ω Resistors - one per LED
 
+---
+
+#Wiring
+
+- GND --> negative ( - ) power rail
+
+- GREEN LED :
+     - GND --> LED Cathode (short leg)
+     - GPIO Pin 4 --> one end of 330 Ω Resistor
+     - Other end of 330 Ω Resistor --> LED Anode (long leg)
+- RED LED:
+     - GND --> LED Cathode (short leg)
+     - GPIO Pin 18 --> one end of 330 Ω Resistor
+     - Other end of 330 Ω Resistor --> LED Anode (long leg)
+
+- Buzzer:
+     - WIRES SHOULD BE ON THE SAME SIDE OF THE BUZZER
+     - GND --> One leg of buzzer
+     - GPIO Pin 21 --> Other leg of buzzer
+ 
+ 
+- Button:
+     - CONNECT BUZZER OVER THE CENTER LINE OF BREADBOARD
+     - GND --> One side of the button
+     - GPIO Pin 22 --> Other side of button on OPPOSITE LEG (if using FRONT leg of the button for GND on one side, use BACK LEG on the OTHER SIDE for GPIO pin)
+ 
 ---
 
 #Wi-Fi Configuration
