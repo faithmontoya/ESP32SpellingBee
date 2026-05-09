@@ -1,0 +1,21 @@
+#-----Word List-----
+
+WORDS = [
+  "Fahrenheit",
+  "Definitely",
+  "Restaurant",
+  "Vacuum",
+  "Separate",
+  "Maintenance",
+  "Yacht",
+  "Necessary", 
+  "Bureaucracy",
+  "Onomatopoeia",
+  "Mischievous",
+  "Psychology",
+  "Receipt",
+  "License",
+  "Separators",
+  "Pneumonia",
+  "Croissant",
+]
