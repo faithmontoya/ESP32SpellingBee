@@ -96,6 +96,8 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
 
 THIS CODE IS FREE TO MODIFY AND SHARE!!!
 
+---
+
 
 ------------------------------------------------FULL ESP32 SPELLING BEE SCRIPT: ---------------------------------------------------
 
