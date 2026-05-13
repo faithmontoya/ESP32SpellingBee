@@ -17,7 +17,9 @@ WORDS = [
   "License",
   "Separators",
   "Pneumonia",
-  "Croissant",
+  "Croissant"
+  "Accommodate",
+  "Nauseous"
 ]
 
 current_word = None
