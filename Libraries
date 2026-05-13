@@ -4,3 +4,5 @@ import machine
 import time
 import ure
 import urequests
+import uio
+import sys
