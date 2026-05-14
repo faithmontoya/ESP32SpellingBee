@@ -1,0 +1,14 @@
+#-----PC Text-To-Speech-----
+
+PC_IP = "192.168.68.50" #Personal PC IP Address 
+
+def speak_on_pc(word):
+  try:
+    url = f"http://{PC_IP}:5000/say?word={word}"
+      print("Sending new word to PC")  
+      r = urequests.get(url, timeout=1)
+      r.close() 
+  except Exception as e:
+      print("PC Text-To-Speech is unreachable:", e)
+
+    
