@@ -1,11 +1,12 @@
 #-----PC Text-To-Speech-----
 
-PC_IP = "192.168.68.50" #Personal PC IP Address 
+PC_IP = "192.168.68.51"
 
 def speak_on_pc(word):
     try:
         url = f"http://{PC_IP}:5000/say?word={word}"
-        print("Sending to PC:", url)
-        urequests.get(url)  #fire-and-forget/ send request then continue without waiting for response
+        print("Sending new word to PC...")
+        #fire-and-forget/ send request to the PC "say" url, then continue without waiting for response
+        urequests.get(url)
     except:
         pass
