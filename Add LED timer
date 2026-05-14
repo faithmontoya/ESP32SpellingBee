@@ -1,0 +1,4 @@
+#LED timer
+
+led_timer_end = 0  #initiate timer variable 
+led_mode = None #Will later indicate a "correct" or "incorrect" status 
