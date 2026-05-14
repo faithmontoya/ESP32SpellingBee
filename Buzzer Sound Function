@@ -1,0 +1,24 @@
+#-----Sound Functions-----
+
+def tone(freq, duration):
+    if freq == 0: #start with buzzer OFF
+        buzzer.value(0)
+        time.sleep_ms(duration)
+        return
+    pwm = machine.PWM(buzzer)
+    pwm.freq(freq) #set frequencies to freq Hz
+    pwm.duty(512)
+    time.sleep_ms(duration) #play tone for certain time duration
+    pwm.deinit() #stop PWM; silence the buzzer
+
+def happy_sound():
+    melody = [600, 800, 1000]
+    for f in melody:
+        tone(f, 150)
+        time.sleep_ms(50)
+
+def sad_sound():
+    melody = [800, 600, 400]
+    for f in melody:
+        tone(f, 200)
+        time.sleep_ms(50)
