@@ -1,30 +1,70 @@
 #-----Main Loop-----
 
-while True:
-  wait_for_button()
+try:
+    while True:
 
-  try:
-    conn, addr = s.accept() #accept the connection
-    request = conn.recv(1024).decode() #read the data and convert into a string response
+        # If LED timer ends, turn BOTH LEDs off
+        if led_mode and time.ticks_ms() > led_timer_end: 
+            green_led.value(0)
+            red_led.value(0)
+            led_mode = None
 
-    #-----Recieve the answer from webpage URL-----
-    match = ure.search("answer=([^& ]", resquest)
-    if match and current_word:
-      user_answer = match.group(1).replace("%20", " ").lower() #return answer, add a space for URL, allow case-insenitivity
-      correct = (user_answer == current_word.lower()) #results in True or False
+        # Add button control
+        if button_pressed:
+            button_pressed = False #Reset the button; won't trigger until pressed again 
 
-      #-----Responses for the User answers-----
-      if correct:
-        green_led.value(1)
-        red_led.value(0)
+            import urandom
+            current_word = WORDS[urandom.getrandbits(8) % len(WORDS)] #Choose a new word
+            print("Finding new word...")
 
-      else:
-        green_led.value(0)
-        red_led.value(1)
-      
-      last_correct_spelling = print(f"Correct spelling: {current_word}") #print the correct spelling compared to user's answer
-      
-    response = webpage() 
-    conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #add 200 OK to verify successful connection
-    conn.sendall(response) #send the response from the webpage
-    conn.close() #close the connection
+            speak_on_pc(current_word)
+            print("Delivered! Good luck!")
+
+        # Connect to the webserver
+        try:
+            conn, addr = s.accept() #Accept the connection
+            request = conn.recv(1024).decode() #Read the data; convert it into a string response
+            
+            #Recieve the answer from webpage URL
+            match = ure.search("answer=([^& ]+)", request)
+
+            if match is not None and current_word:
+                user_answer = match.group(1).replace("%20", " ").lower() #Replace URL spaces and make string case-insensitive
+                correct = user_answer.strip().lower() == current_word.strip().lower() #Answers correct if spelling matches regardless of capitalization
+
+                if correct:
+                    green_led.value(1)
+                    red_led.value(0)
+                    happy_sound()
+
+                    led_mode = "correct" #Turns green LED on
+                    led_timer_end = time.ticks_ms() + 5000 #Turns off LED after 5 seconds
+
+                    last_result = "Correct!"
+                    last_message = "Good job!"
+
+                else:
+                    green_led.value(0)
+                    red_led.value(1)
+                    sad_sound()
+
+                    led_mode = "incorrect" #Turns red LED on
+                    led_timer_end = time.ticks_ms() + 5000 #Turns off LED after 5 seconds
+
+                    last_result = "Incorrect!"
+                    last_message = "Try again!"
+
+                last_correct_spelling = f"Correct spelling: {current_word}" #Display the correct spelling
+                current_word = None  #Prevent re-grading
+
+            conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #Return 200(OK) to indicate successful HTTP response
+            conn.sendall(webpage()) #Send response from webpage
+            conn.close() #Close the connection
+
+        except OSError:
+            pass
+
+        time.sleep_ms(5)
+
+except Exception as e:
+    print("CRASHED WITH ERROR:")
