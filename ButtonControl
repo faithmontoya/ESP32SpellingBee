@@ -1,16 +1,10 @@
 #-----Button Control-----
+#Used to ensure main loop doesn't waste time checking button state; prevents delay in performance
 
-def wait_for_button():
-    global current_word, last_result, last_correct_spelling, last_message
-    if button.value() == 0:  # pressed
-        time.sleep_ms(20)
-        if button.value() == 0: #nothing lights up if nothing is pressed
-            green_led.value(0)
-            red_led.value(0)
+button_pressed = False #start button as unpressed 
 
-            # Pick a new word
-            import urandom #for random selection 
-            current_word = WORDS[urandom.getrandbits(8) % len(WORDS)] #recieve a random word
-            last_result = ""
-            last_correct_spelling = ""
-            last_message = ""
+def handle_button(pin):
+    global button_pressed #allows use for OUTSIDE of main loop
+    button_pressed = True
+
+button.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button) #Button(pin) will change from high to low state after being pressed
