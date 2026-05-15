@@ -4,4 +4,5 @@ addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
 s = socket.socket()
 s.bind(addr)
 s.listen(1)
+s.settimeout(0.1) #Wait for client with a timeout to prevent hanging
 print("Click HERE to open the game! --> http://%s/" % ip)
