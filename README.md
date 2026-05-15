@@ -16,7 +16,9 @@ Challenge your spelling skills with common words that are surprisingly tricky to
 7. Webpage
 8. Button — Triggering New Words
 9. Customizing the Word List
-10. Full ESP32 Code
+10. How to Run the Project
+11. Full ESP32 Code
+12. Troubleshooting Suggestions
 
 ---
 
@@ -186,10 +188,18 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
 
 ---
 
-**THIS CODE IS FREE TO MODIFY AND SHARE!!!**
+**How to Run the Project**
+1) Flash MicroPython onto the ESP32 microcontroller (if not done already)
+2) Upload and save the **PC-SIDE SCRIPT** using **Visual Studio Code** (or another preferred code editor)
+3) Upload the **ESP32 CODE** using **Thonny IDE** (or another preferred Python-Based IDE)
+4) Update the **Wi-Fi SSID/Password credentials** on the **ESP32 CODE**
+5) Update the **PC's IP address** on the **ESP32 CODE**
+6) Run the **PC-SIDE SCRIPT first!!!** (run in Bash using command *'python filename'*)
+7) Run the **ESP32 Code**
+8) Click the printed link to open the game's webpage on a browser
+9) Press the button, listen for the spelling word, then simply type and submit your answer! 
 
 ---
-
 
 ****Full ESP32 Script****
 
@@ -219,14 +229,14 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
 
          def tone(freq, duration):
              if freq == 0:
-                 buzzer.value(0)
+                 buzzer.value(0) #Start with buzzer OFF
                  time.sleep_ms(duration)
                  return
              pwm = machine.PWM(buzzer)
-             pwm.freq(freq)
+             pwm.freq(freq) #Set frequencies to freq Hz
              pwm.duty(512)
-             time.sleep_ms(duration)
-             pwm.deinit()
+             time.sleep_ms(duration) #Play tone for certain time duration
+             pwm.deinit() #Stop PWM: silence the buzzer
 
          def happy_sound():
              melody = [600, 800, 1000]
@@ -265,6 +275,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
   
          ]
 
+         #Initiate variables
          current_word = None
          last_result = ""
          last_correct_spelling = ""
@@ -273,10 +284,10 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
          #-----Button Control-----
          #Used to ensure main loop doesn't waste time checking button state; prevents delay in performance
 
-         button_pressed = False #start button as unpressed 
+         button_pressed = False #Start with button as unpressed 
          
          def handle_button(pin):
-             global button_pressed #allows use for OUTSIDE of main loop
+             global button_pressed #Allows use for OUTSIDE of main loop
              button_pressed = True
          
          button.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button) #Button(pin) will change from high to low state after being pressed
@@ -295,7 +306,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
              while not wlan.isconnected():
                  time.sleep(0.2)
          
-             print("Connected:", wlan.ifconfig())
+             print("Connected:", wlan.ifconfig()) #Print ESP32 IP to verify connection and show where web server is running
              return wlan.ifconfig()[0]
          
          ip = connect_wifi()
@@ -353,7 +364,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
          s.bind(addr)
          s.listen(1)
          s.settimeout(0.1) #Wait for client with a timeout to prevent hanging
-         print("Click HERE to open the game! --> http://%s/" % ip)
+         print("Click HERE to open the game! --> http://%s/" % ip) #Provide URL for quick and easy access to the game
          
          #-----Main Loop-----
          
@@ -381,11 +392,11 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
          
                      if match is not None and current_word:
                          user_answer = match.group(1).replace("%20", " ").lower() #Replace URL spaces and make string case-insensitive
-                         correct = user_answer.strip().lower() == current_word.strip().lower() #Answers correct if spelling matches regardless of capitalization
+                         correct = user_answer.strip().lower() == current_word.strip().lower() #Answers 'correct' if spelling matches regardless of capitalization
          
                          if correct:
                              print("-" *40) #Separator lines for cleaner printout appearance
-                             print("HOORAY! Great spelling! :)") #Correct answer message
+                             print("HOORAY! Great spelling! :)") #'Correct' answer message
                              print("-" *40)
                              green_led.value(1) #Green light turns on
                              red_led.value(0)
@@ -399,7 +410,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
          
                          else:
                              print("-" *40) #Separator lines
-                             print("Aww, man :( better luck next time!") #Incorrect answer message
+                             print("Aww, man :( better luck next time!") #'Incorrect' answer message
                              print("Correct spelling:", current_word, "|", "Your spelling:", user_answer) #Display correct spelling compared to user input
                              print("-" *40)
                              green_led.value(0)
@@ -412,7 +423,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
                              last_result = "Incorrect!"
                              last_message = "Try again!"
          
-                         last_correct_spelling = f"Correct spelling: {current_word}" #Show correct spelling on HTML page
+                         last_correct_spelling = f"Correct spelling: {current_word}" #Show correct spelling on webpage
                          current_word = None #Prevent re-grading
          
                      conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #Return 200(OK) to indicate successful HTTP response
@@ -425,8 +436,34 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
                  time.sleep_ms(5)
          
          except Exception as e:
-             print("CRASHED WITH ERROR:")
-             print(e)
+             print("CRASHED WITH ERROR:", e)
 
+---
 
+**#Troubleshooting suggestions** 
+1) PC doesn't speak
+   - Check the PC_IP and ensure it's updated
+   - Make sure your firewall isn't blocking port 5000
+   - Double check the PC-side text to speech server script
+        - Is it displaying output that the server is running?
+        - Is Flask working correctly?
+2) Webpage won't load
+   - Ensure the ESP32 is successfully connected to the network
+   - The ESP32 should be on the **same network** as the device you're using to run the game (whether that be your phone, PC, etc)
+3) Button isn't responding
+   - Double check wiring
+   - Double check pull-up resistor
+        - If using an external resistor, ensure it's wired correctly as a **Pull-Up** resistor; not pull-down
+   - Try a different button (verify if button just needs replaced)
+ 4) LED's won't light up
+      - Verify GPIO pins (are they connected to the same ones written in the script?)
+      - Verify LED polarity (they won't light up if GND and power are connected to the wrong LED legs)
+      - Try different LEDs (verify if LEDs are burnt or unusable)
+   
+**Good luck! Have fun playing!**
 
+---
+
+**THIS CODE IS FREE TO MODIFY AND SHARE** 
+
+---
