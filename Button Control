@@ -1,10 +1,10 @@
 #-----Button Control-----
 #Used to ensure main loop doesn't waste time checking button state; prevents delay in performance
 
-button_pressed = False #start button as unpressed 
+button_pressed = False #Start button as unpressed 
 
 def handle_button(pin):
-    global button_pressed #allows use for OUTSIDE of main loop
+    global button_pressed #Allows use for OUTSIDE of main loop
     button_pressed = True
 
 button.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button) #Button(pin) will change from high to low state after being pressed
