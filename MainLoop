@@ -3,28 +3,22 @@
 try:
     while True:
 
-        # If LED timer ends, turn BOTH LEDs off
-        if led_mode and time.ticks_ms() > led_timer_end: 
-            green_led.value(0)
-            red_led.value(0)
-            led_mode = None
-
-        # Add button control
+        #Add button control
         if button_pressed:
-            button_pressed = False #Reset the button; won't trigger until pressed again 
+            button_pressed = False #Reset the button; won't trigger until pressed again
 
             import urandom
             current_word = WORDS[urandom.getrandbits(8) % len(WORDS)] #Choose a new word
             print("Finding new word...")
 
             speak_on_pc(current_word)
-            print("Delivered! Good luck!")
+            print("Delivered! Happy spelling!")
 
-        # Connect to the webserver
+        #Connect to the webserver
         try:
             conn, addr = s.accept() #Accept the connection
             request = conn.recv(1024).decode() #Read the data; convert it into a string response
-            
+
             #Recieve the answer from webpage URL
             match = ure.search("answer=([^& ]+)", request)
 
@@ -33,32 +27,37 @@ try:
                 correct = user_answer.strip().lower() == current_word.strip().lower() #Answers correct if spelling matches regardless of capitalization
 
                 if correct:
-                    green_led.value(1)
+                    print("-" *40) #Separator lines for cleaner printout appearance 
+                    print("HOORAY! Great spelling! :)") #Correct answer message
+                    print("-" *40)
+                    green_led.value(1) #Green light turns on
                     red_led.value(0)
-                    happy_sound()
-
-                    led_mode = "correct" #Turns green LED on
-                    led_timer_end = time.ticks_ms() + 5000 #Turns off LED after 5 seconds
+                    happy_sound() #Happy buzzer sound plays
+                    time.sleep(5)
+                    green_led.value(0) #Green LED turns off after 5 seconds
 
                     last_result = "Correct!"
                     last_message = "Good job!"
 
                 else:
+                    print("-" *40) #Separator lines
+                    print("Aww, man :( better luck next time!") #Incorrect answer message
+                    print("Correct spelling:", current_word, "|", "Your spelling:", user_answer) #Display correct spelling compared to user input
+                    print("-" *40)
                     green_led.value(0)
-                    red_led.value(1)
-                    sad_sound()
-
-                    led_mode = "incorrect" #Turns red LED on
-                    led_timer_end = time.ticks_ms() + 5000 #Turns off LED after 5 seconds
+                    red_led.value(1) #Red LED turns on
+                    sad_sound() #Sad buzzer sound plays
+                    time.sleep(5)
+                    red_led.value(0) #Red LED turns off after 5 seconds
 
                     last_result = "Incorrect!"
                     last_message = "Try again!"
 
-                last_correct_spelling = f"Correct spelling: {current_word}" #Display the correct spelling
-                current_word = None  #Prevent re-grading
+                last_correct_spelling = f"Correct spelling: {current_word}" #Show correct spelling on HTML page
+                current_word = None #Prevent re-grading
 
             conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #Return 200(OK) to indicate successful HTTP response
-            conn.sendall(webpage()) #Send response from webpage
+            conn.sendall(webpage()) #Send response from the webpage
             conn.close() #Close the connection
 
         except OSError:
@@ -68,3 +67,4 @@ try:
 
 except Exception as e:
     print("CRASHED WITH ERROR:")
+    print(e)
