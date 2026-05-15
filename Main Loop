@@ -24,11 +24,11 @@ try:
 
             if match is not None and current_word:
                 user_answer = match.group(1).replace("%20", " ").lower() #Replace URL spaces and make string case-insensitive
-                correct = user_answer.strip().lower() == current_word.strip().lower() #Answers correct if spelling matches regardless of capitalization
+                correct = user_answer.strip().lower() == current_word.strip().lower() #Answers 'correct' if spelling matches regardless of capitalization
 
                 if correct:
                     print("-" *40) #Separator lines for cleaner printout appearance 
-                    print("HOORAY! Great spelling! :)") #Correct answer message
+                    print("HOORAY! Great spelling! :)") #'Correct' answer message
                     print("-" *40)
                     green_led.value(1) #Green light turns on
                     red_led.value(0)
@@ -42,7 +42,7 @@ try:
 
                 else:
                     print("-" *40) #Separator lines
-                    print("Aww, man :( better luck next time!") #Incorrect answer message
+                    print("Aww, man :( better luck next time!") #'Incorrect' answer message
                     print("Correct spelling:", current_word, "|", "Your spelling:", user_answer) #Display correct spelling compared to user input
                     print("-" *40)
                     green_led.value(0)
@@ -55,7 +55,7 @@ try:
                     last_result = "Incorrect!"
                     last_message = "Try again!"
 
-                last_correct_spelling = f"Correct spelling: {current_word}" #Show correct spelling on HTML page
+                last_correct_spelling = f"Correct spelling: {current_word}" #Show correct spelling on webpage
                 current_word = None #Prevent re-grading
 
             conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #Return 200(OK) to indicate successful HTTP response
@@ -68,5 +68,4 @@ try:
         time.sleep_ms(5)
 
 except Exception as e:
-    print("CRASHED WITH ERROR:")
-    print(e)
+    print("CRASHED WITH ERROR:", e)
