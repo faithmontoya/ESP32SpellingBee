@@ -88,51 +88,51 @@ Write it using Visual Studio Code (or any other preferred code editor) and save 
 
 SAVE AND RUN THE FOLLOWING ON YOUR **PC**: 
 
-from flask import Flask, request
-import threading
-import queue
-import subprocess
+         from flask import Flask, request
+         import threading
+         import queue
+         import subprocess
 
-app = Flask(__name__)
+         app = Flask(__name__)
 
-speech_queue = queue.Queue()
+         speech_queue = queue.Queue()
 
-def tts_worker():
-    while True:
-        word = speech_queue.get()
-        if word is None:
-            break
+         def tts_worker():
+             while True:
+                 word = speech_queue.get()
+                 if word is None:
+                     break
 
-        print(f"[PC] Speaking: {word}")
+                 print(f"[PC] Speaking: {word}")
 
-        # Use Windows built-in TTS (never freezes)
-        subprocess.run([
-            "powershell",
-            "-Command",
-            (
-            f"Add-Type –AssemblyName System.Speech; " +
-            f"$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; " +
-            f"$speak.Speak('{word}');"
-            )
-        ])
+                 # Use Windows built-in TTS (never freezes)
+                 subprocess.run([
+                     "powershell",
+                     "-Command",
+                     (
+                     f"Add-Type –AssemblyName System.Speech; " +
+                     f"$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; " +
+                     f"$speak.Speak('{word}');"
+                     )
+                 ])
 
-        speech_queue.task_done()
+                 speech_queue.task_done()
 
-thread = threading.Thread(target=tts_worker, daemon=True)
-thread.start()
+         thread = threading.Thread(target=tts_worker, daemon=True)
+         thread.start()
 
-@app.route("/say")
-def say():
-    word = request.args.get("word", "")
-    if word:
-        speech_queue.put(word)
-        return "OK", 200
-    return "No word provided", 400
+         @app.route("/say")
+         def say():
+             word = request.args.get("word", "")
+             if word:
+                 speech_queue.put(word)
+                 return "OK", 200
+             return "No word provided", 400
 
-if __name__ == "__main__":
-    print("PC TTS server running on port 5000...")
-    print("Waiting for ESP32 requests...")
-    app.run(host="0.0.0.0", port=5000)
+         if __name__ == "__main__":
+             print("PC TTS server running on port 5000...")
+             print("Waiting for ESP32 requests...")
+             app.run(host="0.0.0.0", port=5000)
 
 
 
