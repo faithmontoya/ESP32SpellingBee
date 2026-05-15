@@ -181,6 +181,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
   Add, remove, or replace words freely.
   Words are chosen at random and spell checking is case-insensitive.
 
+---
 
 THIS CODE IS FREE TO MODIFY AND SHARE!!!
 
