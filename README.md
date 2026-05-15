@@ -80,7 +80,7 @@ The ESP32 joins the home network and serves a single-page HTML form where the pl
 
 ---
 
-#PC-Side Code - Allows Text-to-Speak through PC Speakers
+#PC-Side Code - Allows Text-to-Speech through PC Speakers
 
 The code creates a small server that runs on the PC (NOT ESP32) and listens on port 5000; speaking the randomly selected words through the speakers. 
 
