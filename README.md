@@ -313,7 +313,7 @@ Pressing the hardware button calls the same  ‘/next’ logic directly on the E
          
          #-----PC Text-To-Speech-----
          
-         PC_IP = "192.168.68.51"
+         PC_IP = "192.168.68.58"
          
          def speak_on_pc(word):
              try:
