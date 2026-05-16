@@ -1,0 +1,232 @@
+#ESP32 Spelling Bee Game
+#Challenge your spelling skills with common words that are surprisingly tricky to spell!
+
+#-----Libraries-----
+
+import network
+import socket
+import machine
+import time
+import ure
+import urequests
+import uio
+import sys
+
+#-----Hardware-----
+
+button = machine.Pin(22, machine.Pin.IN, machine.Pin.PULL_UP)
+buzzer = machine.Pin(21, machine.Pin.OUT)
+green_led = machine.Pin(4, machine.Pin.OUT)
+red_led = machine.Pin(18, machine.Pin.OUT)
+
+#-----Sound Functions-----
+
+def tone(freq, duration):
+    if freq == 0:
+        buzzer.value(0) #Start with buzzer OFF
+        time.sleep_ms(duration)
+        return
+    pwm = machine.PWM(buzzer)
+    pwm.freq(freq) #Set frequencies to freq Hz
+    pwm.duty(512)
+    time.sleep_ms(duration) #Play tone for certain time duration
+    pwm.deinit() #Stop PWM; silence the buzzer
+
+def happy_sound():
+    melody = [600, 800, 1000]
+    for f in melody:
+        tone(f, 150)
+        time.sleep_ms(50)
+
+def sad_sound():
+    melody = [800, 600, 400]
+    for f in melody:
+        tone(f, 200)
+        time.sleep_ms(50)
+
+#-----Word List-----
+
+WORDS = [
+  "Fahrenheit",
+  "Definitely",
+  "Restaurant",
+  "Vacuum",
+  "Separate",
+  "Maintenance",
+  "Yacht",
+  "Necessary",
+  "Bureaucracy",
+  "Onomatopoeia",
+  "Mischievous",
+  "Psychology",
+  "Receipt",
+  "License",
+  "Separators",
+  "Pneumonia",
+  "Croissant",
+  "Accommodate",
+  "Nauseous"
+  
+]
+
+#Initiate variables
+current_word = None
+last_result = ""
+last_correct_spelling = ""
+last_message = ""
+
+#-----Button Control-----
+#Used to ensure main loop doesn't waste time checking button state; prevents delay in performance
+
+button_pressed = False #Start with button as unpressed
+
+def handle_button(pin):
+    global button_pressed #Allows use for OUTSIDE of main loop
+    button_pressed = True
+
+button.irq(trigger=machine.Pin.IRQ_FALLING, handler=handle_button) #Button(pin) will change from high to low state after being pressed
+
+#-----Connect to Wifi-----
+
+SSID = "DecoDeco"
+Password = "@liensRr3al?"
+
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(SSID, Password)
+
+    print("Connecting to Wi-Fi...")
+    while not wlan.isconnected():
+        time.sleep(0.2)
+
+    print("Connected:", wlan.ifconfig()) #Print ESP32 IP to verify connection and show where web server is running
+    return wlan.ifconfig()[0]
+
+ip = connect_wifi()
+
+#-----PC Text-To-Speech-----
+
+PC_IP = "192.168.68.58"
+
+def speak_on_pc(word):
+    try:
+        url = f"http://{PC_IP}:5000/say?word={word}"
+        print("Sending new word to PC...")
+        #fire-and-forget/ send request to the PC "say" url, then continue without waiting for response
+        urequests.get(url)
+    except:
+        pass
+
+#-----HTML Page-----
+
+def webpage():
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>ESP32 Spelling Bee</title>
+<style>
+body {{ font-family: Arial; margin: 40px; }}
+input {{ font-size: 20px; padding: 8px; }}
+button {{ font-size: 20px; padding: 8px; }}
+</style>
+</head>
+<body>
+<h1>Welcome to the ESP32 Spelling Bee!</h1>
+
+<p>Press the button on the ESP32 to hear your word!</p>
+
+<form action="/" method="get">
+    <input type="text" name="answer" placeholder="Type your answer" autofocus>
+    <button type="submit">Submit</button>
+</form>
+
+<h2>{last_result}</h2>
+<p>{last_correct_spelling}</p>
+<p>{last_message}</p>
+
+</body>
+</html>
+"""
+
+#-----Web Server-----
+
+addr = socket.getaddrinfo("0.0.0.0", 80)[0][-1]
+s = socket.socket()
+s.bind(addr)
+s.listen(1)
+s.settimeout(0.1) #Wait for client with a timeout to prevent hanging
+print("Click HERE to open the game! --> http://%s/" % ip) #Provide URL for quick and easy access to the game
+
+#-----Main Loop-----
+
+try:
+    while True:
+
+        #Add button control
+        if button_pressed:
+            button_pressed = False #Reset the button; won't trigger until pressed again
+
+            import urandom
+            current_word = WORDS[urandom.getrandbits(8) % len(WORDS)] #Choose a new word
+            print("Finding new word...")
+
+            speak_on_pc(current_word) #PC announces the word through speakers
+            print("Delivered! Good luck!")
+
+        #Connect to the webserver
+        try:
+            conn, addr = s.accept() #Accept the connection
+            request = conn.recv(1024).decode() #Read the data; convert it into a string response
+
+            #Recieve the answer from webpage URL
+            match = ure.search("answer=([^& ]+)", request)
+
+            if match is not None and current_word:
+                user_answer = match.group(1).replace("%20", " ").lower() #Replace URL spaces and make string case-insensitive
+                correct = user_answer.strip().lower() == current_word.strip().lower() #Answers 'correct' if spelling matches regardless of capitalization
+
+                if correct:
+                    print("-" *40) #Separator lines for cleaner printout appearance
+                    print("HOORAY! Great spelling! :)") #'Correct' answer message
+                    print("-" *40)
+                    green_led.value(1) #Green light turns on
+                    red_led.value(0)
+                    happy_sound() #Happy buzzer sound plays
+                    time.sleep(5)
+                    green_led.value(0) #Green LED turns off after 5 seconds
+                   
+                    #Display 'correct' output on webpage
+                    last_result = "Correct!"
+                    last_message = "Good job!"
+
+                else:
+                    print("-" *40) #Separator lines
+                    print("Aww, man :( better luck next time!") #'Incorrect' answer message
+                    print("Correct spelling:", current_word, "|", "Your spelling:", user_answer) #Display correct spelling compared to user input
+                    print("-" *40)
+                    green_led.value(0)
+                    red_led.value(1) #Red LED turns on
+                    sad_sound() #Sad buzzer sound plays
+                    time.sleep(5)
+                    red_led.value(0) #Red LED turns off after 5 seconds
+
+                    #Display 'incorrect' output on webpage
+                    last_result = "Incorrect!"
+                    last_message = "Try again!"
+
+                last_correct_spelling = f"Correct spelling: {current_word}" #Show correct spelling on webpage
+                current_word = None #Prevent re-grading
+
+            conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n") #Return 200(OK) to indicate successful HTTP response
+            conn.sendall(webpage()) #Send response from webpage
+            conn.close() #Close the connection
+
+        except OSError:
+            pass
+
+        time.sleep_ms(5)
+
+except Exception as e:
+    print("CRASHED WITH ERROR:", e)
